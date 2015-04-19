@@ -37,10 +37,13 @@ namespace SvenFrankson
     public partial class JarvisBook : Form
     {
         private SpeechSynthesizer vocalSynth;
-        public List<string> menu;
-        public List<string> action;
+        private List<string> menu;
+        private List<string> action;
 
-        public HtmlElement currentMessage;
+        private string pageName;
+
+        private HtmlElement currentMessage;
+        private HtmlElement currentComment;
 
         public JarvisBook()
         {
@@ -55,6 +58,7 @@ namespace SvenFrankson
         {
             this.listBox1.KeyPress -= MenuKeyPressHandler;
             this.listBox1.PreviewKeyDown -= ReadPostsKeyPressHandler;
+            this.listBox1.PreviewKeyDown -= ReadCommentsKeyPressHandler;
             this.listBox1.SelectedIndexChanged -= ReadMenuOnChange;
             this.listBox1.SelectedIndexChanged -= InfoMenuOnChange;
         }
@@ -69,32 +73,41 @@ namespace SvenFrankson
                 {
                     command = splitCommand[0];
                 }
-                string commandArg = "";
+                string commandArg1 = "";
+                string commandArg2 = "";
                 if (splitCommand.Length > 1)
                 {
-                    for (int i = 1; i < splitCommand.Length; i++)
+                    commandArg1 = splitCommand[1];
+                }
+                if (splitCommand.Length > 2)
+                {
+                    for (int i = 2; i < splitCommand.Length; i++)
                     {
-                        commandArg += splitCommand[i] + ' ';
+                        commandArg2 += splitCommand[i] + ' ';
                     }
                 }
                 if (command == "GOTOACTU")
                 {
                     webBrowser.Navigate("https://www.facebook.com");
+                    this.pageName = "Actualités";
                     this.LoadMenuWall();
                 }
                 else if (command == "GOTOGROUPS")
                 {
                     webBrowser.Navigate("https://www.facebook.com/groups/?category=membership");
+                    this.pageName = "Liste des Groupes";
                     webBrowser.DocumentCompleted += PopulateMenuWithGroups;
                 }
                 else if (command == "GOTOFRIENDS")
                 {
                     webBrowser.Navigate("https://www.facebook.com/sven.taton/friends_all");
+                    this.pageName = "Liste des Amis";
                     this.LoadMenuWall();
                 }
                 else if (command == "GOTOMYPAGE")
                 {
                     webBrowser.Navigate("https://www.facebook.com");
+                    this.pageName = "Ma page";
                     this.LoadMenuWall();
                 }
                 else if (command == "BACKTOMAINMENU")
@@ -112,7 +125,8 @@ namespace SvenFrankson
                 }
                 else if (command == "GOTOURL")
                 {
-                    webBrowser.Navigate(commandArg);
+                    this.pageName = commandArg2;
+                    webBrowser.Navigate(commandArg1);
                     this.LoadMenuWall();
                 }
             }
@@ -133,12 +147,35 @@ namespace SvenFrankson
                 this.currentMessage = null;
                 this.LoadMenuWall();
             }
+            else if (e.KeyCode == Keys.Right)
+            {
+                this.LoadMenuInfoReadComments();
+            }
+        }
+
+        public void ReadCommentsKeyPressHandler(Object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Up)
+            {
+                this.FocusPrevComment();
+            }
+            else if (e.KeyCode == Keys.Down)
+            {
+                this.FocusNextComment();
+            }
+            else if (e.KeyCode == Keys.Left)
+            {
+                this.currentComment = null;
+                this.LoadMenuInfoReadPosts();
+            }
         }
 
         private void LoadMenuMain()
         {
             this.menu = new List<string>();
             this.action = new List<string>();
+            this.menu.Add("Menu Principal. Début du menu.");
+            this.action.Add("VOID");
             this.menu.Add("Actualités");
             this.action.Add("GOTOACTU");
             this.menu.Add("Groupes");
@@ -153,16 +190,18 @@ namespace SvenFrankson
             {
                 this.listBox1.Items.Add(s);
             }
-            this.listBox1.SelectedIndex = 0;
-            this.listBox1.Select();
             this.listBox1.KeyPress += MenuKeyPressHandler;
             this.listBox1.SelectedIndexChanged += ReadMenuOnChange;
+            this.listBox1.SelectedIndex = 0;
+            this.listBox1.Select();
         }
 
         private void LoadMenuWall()
         {
             this.menu = new List<string>();
             this.action = new List<string>();
+            this.menu.Add("Menu Principal. Début du menu.");
+            this.action.Add("VOID");
             this.menu.Add("Lire les messages");
             this.action.Add("READPOSTS");
             this.menu.Add("Ecrire un nouveau message");
@@ -175,10 +214,10 @@ namespace SvenFrankson
             {
                 this.listBox1.Items.Add(s);
             }
-            this.listBox1.SelectedIndex = 0;
-            this.listBox1.Select();
             this.listBox1.KeyPress += MenuKeyPressHandler;
             this.listBox1.SelectedIndexChanged += ReadMenuOnChange;
+            this.listBox1.SelectedIndex = 0;
+            this.listBox1.Select();
         }
 
         private void LoadMenuInfoReadPosts()
@@ -199,14 +238,96 @@ namespace SvenFrankson
             {
                 this.listBox1.Items.Add(s);
             }
-            this.listBox1.ClearSelected();
-            this.listBox1.Select();
             this.listBox1.PreviewKeyDown += ReadPostsKeyPressHandler;
             this.listBox1.SelectedIndexChanged += InfoMenuOnChange;
+            this.listBox1.ClearSelected();
+            this.listBox1.Select();
+        }
+
+        private void LoadMenuInfoReadComments()
+        {
+            this.menu = new List<string>();
+            this.action = new List<string>();
+            this.menu.Add("Lecture des commentaires");
+            this.action.Add("VOID");
+            this.menu.Add("Haut : Commentaire précedent");
+            this.action.Add("VOID");
+            this.menu.Add("Bas : Commentaire suivant");
+            this.action.Add("VOID");
+            this.menu.Add("Gauche : Retour");
+            this.action.Add("VOID");
+            this.ClearMenuDelegates();
+            this.listBox1.Items.Clear();
+            foreach (string s in this.menu)
+            {
+                this.listBox1.Items.Add(s);
+            }
+            this.listBox1.PreviewKeyDown += ReadCommentsKeyPressHandler;
+            this.listBox1.SelectedIndexChanged += InfoMenuOnChange;
+            this.listBox1.ClearSelected();
+            this.listBox1.Select();
+        }
+
+        private void PopulateMenuWithGroups(object sender, EventArgs e)
+        {
+            this.webBrowser.DocumentCompleted -= PopulateMenuWithGroups;
+
+            this.menu = new List<string>();
+            this.action = new List<string>();
+
+            HtmlDocument doc = webBrowser.Document;
+
+            foreach (HtmlElement el0 in doc.All)
+            {
+                if (el0.TagName == "A")
+                {
+                    if (el0.GetAttribute("className") == "groupsRecommendedTitle")
+                    {
+                        this.menu.Add(DataFromHtmlElement(el0));
+                        this.action.Add("GOTOURL " + el0.GetAttribute("href"));
+                    }
+                }
+            }
+
+            this.menu.Add("Retour");
+            this.action.Add("BACKTOMAINMENU");
+
+            this.ClearMenuDelegates();
+            this.listBox1.Items.Clear();
+            foreach (string s in this.menu)
+            {
+                this.listBox1.Items.Add(s);
+            }
+            this.listBox1.SelectedIndex = 0;
+            this.listBox1.Select();
+            this.listBox1.KeyPress += MenuKeyPressHandler;
+            this.listBox1.SelectedIndexChanged += ReadMenuOnChange;
+        }
+
+        private void UnfoldFullPage()
+        {
+            HtmlDocument doc = webBrowser.Document;
+
+            foreach (HtmlElement el0 in doc.All)
+            {
+                if (el0.GetAttribute("className") == "UFIPagerLink")
+                {
+                    el0.InvokeMember("Click");
+                }
+                else if (el0.GetAttribute("className").Contains(" fss"))
+                {
+                    if (el0.Parent.GetAttribute("className") == "UFICommentBody")
+                    {
+                        el0.InvokeMember("Click");
+                    }
+                }
+            }
         }
 
         private void FocusPrevMessage()
         {
+            this.UnfoldFullPage();
+
             HtmlDocument doc = webBrowser.Document;
             HtmlElement lastFound = null;
 
@@ -244,6 +365,8 @@ namespace SvenFrankson
 
         private void FocusNextMessage()
         {
+            this.UnfoldFullPage();
+
             HtmlDocument doc = webBrowser.Document;
 
             int index = 0;
@@ -337,40 +460,122 @@ namespace SvenFrankson
             this.currentMessage.ScrollIntoView(true);
         }
 
-        private void PopulateMenuWithGroups(object sender, EventArgs e)
+        private void FocusPrevComment()
         {
-            this.webBrowser.DocumentCompleted -= PopulateMenuWithGroups;
+            if (this.currentMessage == null)
+            {
+                return;
+            }
+            if (this.currentComment == null)
+            {
+                return;
+            }
 
-            this.menu = new List<string>();
-            this.action = new List<string>();
+            HtmlElement lastFound = null;
 
+            foreach (HtmlElement el0 in currentMessage.All)
+            {
+                if (el0.GetAttribute("className") == "UFICommentContentBlock")
+                {
+                    if (el0 == this.currentComment)
+                    {
+                        break;
+                    }
+                    lastFound = el0;
+                }
+            }
+
+            if (lastFound != null)
+            {
+                this.currentComment = lastFound;
+            }
+
+            if (this.currentComment != null)
+            {
+                this.FocusCurrentComment();
+            }
+        }
+
+        private void FocusNextComment()
+        {
             HtmlDocument doc = webBrowser.Document;
 
-            foreach (HtmlElement el0 in doc.All)
+            int index = 0;
+            bool found = false;
+            foreach (HtmlElement el0 in this.currentMessage.All)
             {
-                if (el0.TagName == "A")
+                if (el0.GetAttribute("className") == "UFICommentContentBlock")
                 {
-                    if (el0.GetAttribute("className") == "groupsRecommendedTitle")
+                    index++;
+                    if (found == true)
                     {
-                        this.menu.Add(DataFromHtmlElement(el0));
-                        this.action.Add("GOTOURL " + el0.GetAttribute("href"));
+                        this.currentComment = el0;
+                        break;
+                    }
+                    else if (this.currentComment == null)
+                    {
+                        this.currentComment = el0;
+                        break;
+                    }
+                    else if (el0 == this.currentComment)
+                    {
+                        found = true;
                     }
                 }
             }
 
-            this.menu.Add("Retour");
-            this.action.Add("BACKTOMAINMENU");
-
-            this.ClearMenuDelegates();
-            this.listBox1.Items.Clear();
-            foreach (string s in this.menu)
+            if (currentComment != null)
             {
-                this.listBox1.Items.Add(s);
+                this.FocusCurrentComment();
             }
-            this.listBox1.SelectedIndex = 0;
-            this.listBox1.Select();
-            this.listBox1.KeyPress += MenuKeyPressHandler;
-            this.listBox1.SelectedIndexChanged += ReadMenuOnChange;
+        }
+
+        private void FocusCurrentComment()
+        {
+            string author = "Anonyme";
+            string date = "inconnu";
+            string content = "";
+            int likesCount = 0;
+
+            foreach (HtmlElement el2 in this.currentComment.All)
+            {
+                if (el2.GetAttribute("className").Contains("UFICommentActorName"))
+                {
+                    author = DataFromHtmlElement(el2.FirstChild);
+                }
+                else if (el2.TagName == "ABBR")
+                {
+                    date = UnixTimeStampToDateTime(el2.GetAttribute("data-utime")).ToShortDateString();
+                }
+                else if (el2.GetAttribute("className") == "UFICommentBody")
+                {
+                    foreach (HtmlElement el3 in el2.All)
+                    {
+                        content += DataFromHtmlElement(el3) + " ";
+                    }
+                }
+                else if (el2.GetAttribute("className") == "UFICommentLikeButton")
+                {
+                    foreach (HtmlElement el3 in el2.All)
+                    {
+                        if (el3.TagName == "SPAN")
+                        {
+                            int tmpLikesCount = 0;
+                            int.TryParse(DataFromHtmlElement(el3), out tmpLikesCount);
+                            likesCount = tmpLikesCount;
+                        }
+                    }
+                }
+            }
+
+            string voiceOutput = "";
+            voiceOutput += "Commentaire de " + author + " le " + date + " : " + content + ". " + likesCount + " personnes aiment.";
+            output.Text = voiceOutput;
+            this.vocalSynth.SpeakAsyncCancelAll();
+            this.vocalSynth.SpeakAsync(voiceOutput);
+
+            this.currentComment.Focus();
+            this.currentComment.ScrollIntoView(true);
         }
 
         private void FocusNewMessageBox()
@@ -516,7 +721,6 @@ namespace SvenFrankson
             }
         }
 
-        // Putain si ça marche ça va être un joyeux bordel, mais c'est marrant.
         private void CommentEverythingOnScreen()
         {
             output.Text = "";
@@ -536,7 +740,6 @@ namespace SvenFrankson
             }
         }
 
-        // Putain si ça marche ça va être un joyeux bordel, mais c'est marrant.
         private void LikeEverythingOnScreen()
         {
             output.Text = "";
@@ -695,12 +898,17 @@ namespace SvenFrankson
             output.Text = (b - a).ToString();
         }
 
-        private void ReadMenuOnChange(object sender, EventArgs e)
+        private void CancelAndSpeak(string s)
         {
             this.vocalSynth.SpeakAsyncCancelAll();
+            this.vocalSynth.SpeakAsync(s);
+        }
+
+        private void ReadMenuOnChange(object sender, EventArgs e)
+        {
             if (this.listBox1.SelectedItem != null)
             {
-                this.vocalSynth.SpeakAsync(this.listBox1.SelectedItem.ToString());
+                this.CancelAndSpeak(this.listBox1.SelectedItem.ToString());
             }
         }
 
