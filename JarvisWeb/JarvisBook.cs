@@ -97,11 +97,6 @@ namespace SvenFrankson
                     webBrowser.Navigate("https://www.facebook.com");
                     this.LoadMenuWall();
                 }
-                else if (command == "DEBUGUNETASSEDE")
-                {
-                    webBrowser.Navigate("https://www.facebook.com/groups/174190415929208/");
-                    this.LoadMenuWall();
-                }
                 else if (command == "BACKTOMAINMENU")
                 {
                     this.LoadMenuMain();
@@ -152,8 +147,6 @@ namespace SvenFrankson
             this.action.Add("GOTOFRIENDS");
             this.menu.Add("Ma page");
             this.action.Add("GOTOMYPAGE");
-            this.menu.Add("UneTasseDe");
-            this.action.Add("DEBUGUNETASSEDE");
             this.ClearMenuDelegates();
             this.listBox1.Items.Clear();
             foreach (string s in this.menu)
@@ -243,11 +236,52 @@ namespace SvenFrankson
                 this.currentMessage = lastFound;
             }
 
-            output.Text += " " + index;
+            if (this.currentMessage != null)
+            {
+                this.FocusCurrentMessage();
+            }
+        }
+
+        private void FocusNextMessage()
+        {
+            HtmlDocument doc = webBrowser.Document;
+
+            int index = 0;
+            bool found = false;
+            foreach (HtmlElement el0 in doc.All)
+            {
+                if (el0.GetAttribute("className").Contains("userContentWrapper"))
+                {
+                    index++;
+                    if (found == true)
+                    {
+                        this.currentMessage = el0;
+                        break;
+                    }
+                    else if (this.currentMessage == null)
+                    {
+                        this.currentMessage = el0;
+                        break;
+                    }
+                    else if (el0 == this.currentMessage)
+                    {
+                        found = true;
+                    }
+                }
+            }
+
+            if (currentMessage != null)
+            {
+                this.FocusCurrentMessage();
+            }
+        }
+
+        private void FocusCurrentMessage()
+        {
             string author = "Anonyme";
             string date = "inconnu";
             string content = "";
-            int likeCount = 0;
+            int likesCount = 0;
 
             foreach (HtmlElement el1 in currentMessage.All)
             {
@@ -271,89 +305,33 @@ namespace SvenFrankson
                         content += DataFromHtmlElement(el2) + " ";
                     }
                 }
-            }
-
-            string voiceOutput = "";
-            voiceOutput += author + " le " + date + " : " + content + ". " + likeCount + " personnes aiment.";
-            output.Text = voiceOutput;
-            this.vocalSynth.SpeakAsyncCancelAll();
-            this.vocalSynth.SpeakAsync(voiceOutput);
-
-            this.currentMessage.Focus();
-            this.currentMessage.ScrollIntoView(true);
-        }
-
-        private void FocusNextMessage()
-        {
-            HtmlDocument doc = webBrowser.Document;
-
-            output.Text = "Not Found";
-            int index = 0;
-            bool found = false;
-            foreach (HtmlElement el0 in doc.All)
-            {
-                if (el0.GetAttribute("className").Contains("userContentWrapper"))
-                {
-                    index++;
-                    if (found == true)
-                    {
-                        this.currentMessage = el0;
-                        break;
-                    }
-                    else if (this.currentMessage == null)
-                    {
-                        this.currentMessage = el0;
-                        break;
-                    }
-                    else if (el0 == this.currentMessage)
-                    {
-                        output.Text = "Found";
-                        found = true;
-                    }
-                }
-            }
-
-            output.Text += " " + index;
-            string author = "Anonyme";
-            string date = "inconnu";
-            string content = "";
-            int likeCount = 0;
-
-            if (currentMessage == null)
-            {
-                return;
-            }
-
-            foreach (HtmlElement el1 in currentMessage.All)
-            {
-                if (el1.GetAttribute("className") == "fwb fcg")
-                {
-                    HtmlElement aProfile = el1.FirstChild;
-                    author = DataFromHtmlElement(aProfile);
-
-                    foreach (HtmlElement el2 in el1.Parent.Parent.Parent.All)
-                    {
-                        if (el2.TagName == "ABBR")
-                        {
-                            date = UnixTimeStampToDateTime(el2.GetAttribute("data-utime")).ToString();
-                        }
-                    }
-                }
-                else if (el1.GetAttribute("className").Contains("userContent"))
+                else if (el1.GetAttribute("className") == "UFILikeSentenceText")
                 {
                     foreach (HtmlElement el2 in el1.All)
                     {
-                        content += DataFromHtmlElement(el2) + " ";
+                        if (el2.TagName == "A")
+                        {
+                            string s = DataFromHtmlElement(el2);
+                            string first = s.Split(' ')[0];
+                            int count;
+                            if (int.TryParse(first, out count))
+                            {
+                                likesCount += count;
+                            }
+                            else
+                            {
+                                likesCount++;
+                            }
+                        }
                     }
                 }
             }
 
             string voiceOutput = "";
-            voiceOutput += author + " le " + date + " : " + content + ". " + likeCount + "aiment.";
+            voiceOutput += author + " le " + date + " : " + content + ". " + likesCount + " personnes aiment.";
             output.Text = voiceOutput;
             this.vocalSynth.SpeakAsyncCancelAll();
             this.vocalSynth.SpeakAsync(voiceOutput);
-
 
             this.currentMessage.Focus();
             this.currentMessage.ScrollIntoView(true);
