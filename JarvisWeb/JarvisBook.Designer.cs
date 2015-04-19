@@ -1,6 +1,6 @@
-﻿namespace JarvisWeb
+﻿namespace SvenFrankson
 {
-    partial class Form1
+    partial class JarvisBook
     {
         /// <summary>
         /// Required designer variable.
