@@ -121,13 +121,38 @@ namespace SvenFrankson
                 }
                 else if (command == "WRITENEWPOST")
                 {
-                    
+                    webBrowser.PreviewKeyDown += WritingNewMessageKeyPressHandler;
+                    this.FocusNewMessageBox();
                 }
                 else if (command == "GOTOURL")
                 {
                     this.pageName = commandArg2;
                     webBrowser.Navigate(commandArg1);
                     this.LoadMenuWall();
+                }
+            }
+        }
+
+        public void WritingNewMessageKeyPressHandler(Object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.Control)
+            {
+                if (e.KeyCode == Keys.S)
+                {
+                    foreach (HtmlElement el0 in webBrowser.Document.All)
+                    {
+                        if (el0.TagName == "BUTTON")
+                        {
+                            // Warning. Following check is EXTREMELY DIRTY... But no "id" allows to find it more efficiently...
+                            if (DataFromHtmlElement(el0).Contains("Publier"))
+                            {
+                                webBrowser.PreviewKeyDown -= WritingNewMessageKeyPressHandler;
+                                el0.InvokeMember("Click");
+                                this.vocalSynth.Speak("Envoi");
+                                this.listBox1.Select();
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -168,140 +193,6 @@ namespace SvenFrankson
                 this.currentComment = null;
                 this.LoadMenuInfoReadPosts();
             }
-        }
-
-        private void LoadMenuMain()
-        {
-            this.menu = new List<string>();
-            this.action = new List<string>();
-            this.menu.Add("Menu Principal. Début du menu.");
-            this.action.Add("VOID");
-            this.menu.Add("Actualités");
-            this.action.Add("GOTOACTU");
-            this.menu.Add("Groupes");
-            this.action.Add("GOTOGROUPS");
-            this.menu.Add("Amis");
-            this.action.Add("GOTOFRIENDS");
-            this.menu.Add("Ma page");
-            this.action.Add("GOTOMYPAGE");
-            this.ClearMenuDelegates();
-            this.listBox1.Items.Clear();
-            foreach (string s in this.menu)
-            {
-                this.listBox1.Items.Add(s);
-            }
-            this.listBox1.KeyPress += MenuKeyPressHandler;
-            this.listBox1.SelectedIndexChanged += ReadMenuOnChange;
-            this.listBox1.SelectedIndex = 0;
-            this.listBox1.Select();
-        }
-
-        private void LoadMenuWall()
-        {
-            this.menu = new List<string>();
-            this.action = new List<string>();
-            this.menu.Add("Menu Principal. Début du menu.");
-            this.action.Add("VOID");
-            this.menu.Add("Lire les messages");
-            this.action.Add("READPOSTS");
-            this.menu.Add("Ecrire un nouveau message");
-            this.action.Add("WRITENEWPOST");
-            this.menu.Add("Retour");
-            this.action.Add("BACKTOMAINMENU");
-            this.ClearMenuDelegates();
-            this.listBox1.Items.Clear();
-            foreach (string s in this.menu)
-            {
-                this.listBox1.Items.Add(s);
-            }
-            this.listBox1.KeyPress += MenuKeyPressHandler;
-            this.listBox1.SelectedIndexChanged += ReadMenuOnChange;
-            this.listBox1.SelectedIndex = 0;
-            this.listBox1.Select();
-        }
-
-        private void LoadMenuInfoReadPosts()
-        {
-            this.menu = new List<string>();
-            this.action = new List<string>();
-            this.menu.Add("Lecture du mur");
-            this.action.Add("VOID");
-            this.menu.Add("Haut : Message précedent");
-            this.action.Add("VOID");
-            this.menu.Add("Bas : Message suivant");
-            this.action.Add("VOID");
-            this.menu.Add("Gauche : Retour");
-            this.action.Add("VOID");
-            this.ClearMenuDelegates();
-            this.listBox1.Items.Clear();
-            foreach (string s in this.menu)
-            {
-                this.listBox1.Items.Add(s);
-            }
-            this.listBox1.PreviewKeyDown += ReadPostsKeyPressHandler;
-            this.listBox1.SelectedIndexChanged += InfoMenuOnChange;
-            this.listBox1.ClearSelected();
-            this.listBox1.Select();
-        }
-
-        private void LoadMenuInfoReadComments()
-        {
-            this.menu = new List<string>();
-            this.action = new List<string>();
-            this.menu.Add("Lecture des commentaires");
-            this.action.Add("VOID");
-            this.menu.Add("Haut : Commentaire précedent");
-            this.action.Add("VOID");
-            this.menu.Add("Bas : Commentaire suivant");
-            this.action.Add("VOID");
-            this.menu.Add("Gauche : Retour");
-            this.action.Add("VOID");
-            this.ClearMenuDelegates();
-            this.listBox1.Items.Clear();
-            foreach (string s in this.menu)
-            {
-                this.listBox1.Items.Add(s);
-            }
-            this.listBox1.PreviewKeyDown += ReadCommentsKeyPressHandler;
-            this.listBox1.SelectedIndexChanged += InfoMenuOnChange;
-            this.listBox1.ClearSelected();
-            this.listBox1.Select();
-        }
-
-        private void PopulateMenuWithGroups(object sender, EventArgs e)
-        {
-            this.webBrowser.DocumentCompleted -= PopulateMenuWithGroups;
-
-            this.menu = new List<string>();
-            this.action = new List<string>();
-
-            HtmlDocument doc = webBrowser.Document;
-
-            foreach (HtmlElement el0 in doc.All)
-            {
-                if (el0.TagName == "A")
-                {
-                    if (el0.GetAttribute("className") == "groupsRecommendedTitle")
-                    {
-                        this.menu.Add(DataFromHtmlElement(el0));
-                        this.action.Add("GOTOURL " + el0.GetAttribute("href"));
-                    }
-                }
-            }
-
-            this.menu.Add("Retour");
-            this.action.Add("BACKTOMAINMENU");
-
-            this.ClearMenuDelegates();
-            this.listBox1.Items.Clear();
-            foreach (string s in this.menu)
-            {
-                this.listBox1.Items.Add(s);
-            }
-            this.listBox1.SelectedIndex = 0;
-            this.listBox1.Select();
-            this.listBox1.KeyPress += MenuKeyPressHandler;
-            this.listBox1.SelectedIndexChanged += ReadMenuOnChange;
         }
 
         private void UnfoldFullPage()
@@ -764,138 +655,9 @@ namespace SvenFrankson
             }
         }
 
-        private void next_Click(object sender, EventArgs e)
+        private void Hide_Click(object sender, EventArgs e)
         {
-            DateTime a = DateTime.Now;
-
-            StreamWriter structStream = new StreamWriter("FBWalloutput.txt");
-            StreamWriter splitStream = new StreamWriter("splitStream.txt");
-            StreamWriter outputStream = new StreamWriter("output.txt");
-            StreamWriter outputCleanStream = new StreamWriter("outputClean.txt");
-            HtmlDocument doc = webBrowser.Document;
-
-            WriteYourself(outputStream, 0, doc.Body);
-
-            foreach (HtmlElement el0 in doc.All)
-            {
-                if (el0.GetAttribute("className") == "UFIPagerLink")
-                {
-                    el0.InvokeMember("Click");
-                }
-                else if (el0.GetAttribute("className").Contains(" fss"))
-                {
-                    if (el0.Parent.GetAttribute("className") == "UFICommentBody")
-                    {
-                        el0.InvokeMember("Click");
-                    }
-                }
-                else if (el0.GetAttribute("className").Contains("userContentWrapper"))
-                {
-                    FBPost newPost = new FBPost();
-                    WriteYourself(outputCleanStream, 0, el0.Parent);
-
-                    foreach (HtmlElement el1 in el0.All)
-                    {
-                        if (el1.GetAttribute("className") == "fwb fcg")
-                        {
-                            HtmlElement aProfile = el1.FirstChild;
-                            newPost.Author.Name = DataFromHtmlElement(aProfile);
-                            newPost.Author.Url = aProfile.GetAttribute("href");
-
-                            foreach (HtmlElement el2 in el1.Parent.Parent.Parent.All)
-                            {
-                                if (el2.TagName == "ABBR")
-                                {
-                                    newPost.Date = UnixTimeStampToDateTime(el2.GetAttribute("data-utime"));
-                                }
-                            }
-                        }
-
-                        if (el1.GetAttribute("className").Contains("userContent"))
-                        {
-                            string content = "";
-                            foreach (HtmlElement el2 in el1.All)
-                            {
-                                content += DataFromHtmlElement(el2) + " ";
-                            }
-                            newPost.Content = content;
-                        }
-
-                        if (el1.GetAttribute("className") == "UFILikeSentenceText")
-                        {
-                            int likesCount = 0;
-                            string sLikes = "";
-                            foreach (HtmlElement el2 in el1.All)
-                            {
-                                if (el2.TagName == "A")
-                                {
-                                    string s = DataFromHtmlElement(el2);
-                                    string first = s.Split(' ')[0];
-                                    int count;
-                                    if (int.TryParse(first, out count))
-                                    {
-                                        likesCount += count;
-                                    }
-                                    else
-                                    {
-                                        likesCount++;
-                                    }
-                                }
-                                sLikes += DataFromHtmlElement(el2);
-                            }
-                            newPost.LikeCount = likesCount;
-                        }
-
-                        if (el1.GetAttribute("className") == "UFICommentContentBlock")
-                        {
-                            FBComment newComment = new FBComment();
-                            foreach (HtmlElement el2 in el1.All)
-                            {
-                                if (el2.GetAttribute("className").Contains("UFICommentActorName"))
-                                {
-                                    newComment.Author.Name = DataFromHtmlElement(el2.FirstChild);
-                                    newComment.Author.Url = el2.GetAttribute("href");
-                                }
-                                else if (el2.TagName == "ABBR")
-                                {
-                                    newComment.Date = UnixTimeStampToDateTime(el2.GetAttribute("data-utime"));
-                                }
-                                else if (el2.GetAttribute("className") == "UFICommentBody")
-                                {
-                                    string content = "";
-                                    foreach (HtmlElement el3 in el2.All)
-                                    {
-                                        content += DataFromHtmlElement(el3) + " ";
-                                    }
-                                    newComment.Content = content;
-                                }
-                                else if (el2.GetAttribute("className") == "UFICommentLikeButton")
-                                {
-                                    foreach (HtmlElement el3 in el2.All)
-                                    {
-                                        if (el3.TagName == "SPAN")
-                                        {
-                                            int likeCount = 0;
-                                            int.TryParse(DataFromHtmlElement(el3), out likeCount);
-                                            newComment.LikeCount = likeCount;
-                                        }
-                                    }
-                                }
-                            }
-                            newPost.Add(newComment);
-                        }
-                    }
-                }
-            }
-
-            outputStream.Close();
-            outputCleanStream.Close();
-            splitStream.Close();
-            structStream.Close();
-
-            DateTime b = DateTime.Now;
-
-            output.Text = (b - a).ToString();
+            this.webBrowser.Visible = !this.webBrowser.Visible;
         }
 
         private void CancelAndSpeak(string s)

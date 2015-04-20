@@ -32,7 +32,7 @@
             this.input = new System.Windows.Forms.TextBox();
             this.send = new System.Windows.Forms.Button();
             this.output = new System.Windows.Forms.TextBox();
-            this.next = new System.Windows.Forms.Button();
+            this.hideButton = new System.Windows.Forms.Button();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
@@ -41,22 +41,23 @@
             this.webBrowser.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.webBrowser.Location = new System.Drawing.Point(0, 263);
+            this.webBrowser.Location = new System.Drawing.Point(12, 263);
             this.webBrowser.MinimumSize = new System.Drawing.Size(20, 20);
             this.webBrowser.Name = "webBrowser";
-            this.webBrowser.Size = new System.Drawing.Size(1354, 308);
+            this.webBrowser.Size = new System.Drawing.Size(1330, 308);
             this.webBrowser.TabIndex = 0;
+            this.webBrowser.Visible = false;
             // 
             // input
             // 
             this.input.Location = new System.Drawing.Point(12, 12);
             this.input.Name = "input";
-            this.input.Size = new System.Drawing.Size(1168, 22);
+            this.input.Size = new System.Drawing.Size(1059, 22);
             this.input.TabIndex = 1;
             // 
             // send
             // 
-            this.send.Location = new System.Drawing.Point(1186, 12);
+            this.send.Location = new System.Drawing.Point(1077, 12);
             this.send.Name = "send";
             this.send.Size = new System.Drawing.Size(75, 23);
             this.send.TabIndex = 2;
@@ -73,45 +74,46 @@
             this.output.Size = new System.Drawing.Size(1330, 22);
             this.output.TabIndex = 3;
             // 
-            // next
+            // Hide
             // 
-            this.next.Location = new System.Drawing.Point(1267, 12);
-            this.next.Name = "next";
-            this.next.Size = new System.Drawing.Size(75, 23);
-            this.next.TabIndex = 4;
-            this.next.Text = "Next";
-            this.next.UseVisualStyleBackColor = true;
-            this.next.Click += new System.EventHandler(this.next_Click);
+            this.hideButton.Location = new System.Drawing.Point(1158, 12);
+            this.hideButton.Name = "Hide";
+            this.hideButton.Size = new System.Drawing.Size(184, 23);
+            this.hideButton.TabIndex = 4;
+            this.hideButton.Text = "Hide/Show";
+            this.hideButton.UseVisualStyleBackColor = true;
+            this.hideButton.Click += new System.EventHandler(this.Hide_Click);
             // 
             // listBox1
             // 
             this.listBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.listBox1.BackColor = System.Drawing.Color.Blue;
+            this.listBox1.BackColor = System.Drawing.Color.Black;
             this.listBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.listBox1.ForeColor = System.Drawing.Color.Yellow;
+            this.listBox1.ForeColor = System.Drawing.Color.White;
             this.listBox1.FormattingEnabled = true;
             this.listBox1.ItemHeight = 46;
-            this.listBox1.Location = new System.Drawing.Point(0, 69);
+            this.listBox1.Location = new System.Drawing.Point(12, 69);
             this.listBox1.Name = "listBox1";
             this.listBox1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.listBox1.Size = new System.Drawing.Size(1342, 188);
+            this.listBox1.Size = new System.Drawing.Size(1330, 188);
             this.listBox1.TabIndex = 5;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.ReadMenuOnChange);
             // 
-            // Form1
+            // JarvisBook
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(1354, 583);
             this.Controls.Add(this.listBox1);
-            this.Controls.Add(this.next);
+            this.Controls.Add(this.hideButton);
             this.Controls.Add(this.output);
             this.Controls.Add(this.send);
             this.Controls.Add(this.input);
             this.Controls.Add(this.webBrowser);
             this.KeyPreview = true;
-            this.Name = "Form1";
+            this.Name = "JarvisBook";
             this.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.Text = "Form1";
             this.ResumeLayout(false);
@@ -125,7 +127,7 @@
         private System.Windows.Forms.TextBox input;
         private System.Windows.Forms.Button send;
         private System.Windows.Forms.TextBox output;
-        private System.Windows.Forms.Button next;
+        private System.Windows.Forms.Button hideButton;
         private System.Windows.Forms.ListBox listBox1;
     }
 }
