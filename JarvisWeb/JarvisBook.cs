@@ -215,6 +215,7 @@ namespace SvenFrankson
             }
         }
 
+        #region FocusMessage
         private void FocusPrevMessage()
         {
             this.UnfoldFullPage();
@@ -350,7 +351,9 @@ namespace SvenFrankson
             this.currentMessage.Focus();
             this.currentMessage.ScrollIntoView(true);
         }
+        #endregion
 
+        #region FocusComment
         private void FocusPrevComment()
         {
             if (this.currentMessage == null)
@@ -468,6 +471,7 @@ namespace SvenFrankson
             this.currentComment.Focus();
             this.currentComment.ScrollIntoView(true);
         }
+        #endregion
 
         private void FocusNewMessageBox()
         {
